@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <title>Edit Student</title>
+</head>
+<body>
+<h1>Student Interests System</h1>
+
+    <div class="container">
+        <h2>Edit Student</h2>
+        <form class="add_student_form" method="post" action="{{ url_for('edit_student',student_id=student_id) }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="full_name">Full Name:</label>
+                    <input type="text" class="form-control" name="full_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="roll_number">Roll Number:</label>
+                    <input type="text" class="form-control" name="roll_number" required>
+                </div>
+                <div class="form-group">
+                    <label for="email_address">Email Address:</label>
+                    <input type="email" class="form-control" name="email_address" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="gender">Gender:</label>
+                    <select class="form-control" name="gender" required>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="date_of_birth">Date of Birth:</label>
+                    <input type="date" class="form-control" name="date_of_birth" required>
+                </div>
+                <div class="form-group">
+                    <label for="city">City:</label>
+                    <input type="text" class="form-control" name="city" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="interest">Interest:</label>
+                    <select class="form-control" name="interest" id="interestDropdown" required>
+                        <!-- Populate the interest options dynamically from the database -->
+                        {% for interest in interests %}
+                            <option value="{{ interest }}">{{ interest }}</option>
+                        {% endfor %}
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group" id="otherInterestGroup" style="display: none;">
+                    <label for="otherInterest">Other Interest:</label>
+                    <input type="text" class="form-control" name="otherInterest" id="otherInterest">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="department">Department:</label>
+                    <input type="text" class="form-control" name="department" required>
+                </div>
+                <div class="form-group">
+                    <label for="degree_title">Degree Title:</label>
+                    <input type="text" class="form-control" name="degree_title" required>
+                </div>
+                <div class="form-group">
+                    <label for="subject">Subject:</label>
+                    <input type="text" class="form-control" name="subject" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" class="form-control" name="start_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" class="form-control" name="end_date" required>
+                </div>
+            </div>
+
+            <input type="submit" class="btn btn-primary" value="Edit">
+        </form>
+
+
+    </div>
+
+    <script>
+        document.getElementById('interestDropdown').addEventListener('change', function() {
+            var otherInterestGroup = document.getElementById('otherInterestGroup');
+
+            if (this.value === 'Other') {
+                otherInterestGroup.style.display = 'block';
+            } else {
+                otherInterestGroup.style.display = 'none';
+            }
+        });
+         document.getElementById('otherInterest').addEventListener('input', function() {
+        var interestDropdown = document.getElementById('interestDropdown');
+
+        // If the user types in the "Other Interest" field, select "Other" in the dropdown
+        if (this.value.trim() !== '') {
+            interestDropdown.value = 'Other';
+            var otherInterestGroup = document.getElementById('otherInterestGroup');
+            otherInterestGroup.style.display = 'block';
+        }
+    });
+    </script>
+</body>
+</html>

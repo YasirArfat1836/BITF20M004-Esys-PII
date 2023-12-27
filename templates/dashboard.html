@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Dashboard</title>
+</head>
+<body>
+<h1>Student Interests System</h1>
+<a class="btn btn-primary"href="{{ url_for('StudentsList') }}">Students List</a>
+<a class="btn btn-primary"href="{{ url_for('AddStudents') }}">Add Students</a>
+<h2 class="h2">Dashboard</h2>
+<div class="left">
+    <div class="row">
+        <div class="container">
+            <h1>Top 5 Interests</h1>
+            <div class="interest-tiles">
+                {% for interest in top %}
+                    <div class="green-tile">{{ interest[0] }}</div>
+                {% endfor %}
+            </div>
+
+        <h1>Bottom 5 Interests</h1>
+            <div class="interest-tiles">
+                {% for interest in bottom %}
+                    <div class="red-tile">{{ interest[0] }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            <h1>Total Interests</h1>
+            <div class="big-square">
+                <p>Total Interests:</p>
+                <h2>{{ counts[0] }}</h2>
+            </div>
+        </div>
+
+
+
+    <div class="row">
+        <div class="container">
+            <h2>Submission Chart</h2>
+            <canvas id="submissionChart"></canvas>
+        </div>
+
+        <div class="container">
+            <h2>Provincial Distribution</h2>
+            <canvas id="provincialChart"></canvas>
+        </div>
+
+        <div class="container">
+    <h2>Age Distribution</h2>
+    <canvas id="ageDistributionChart"></canvas>
+</div>
+
+        <div class="container">
+    <h2>Department Distribution</h2>
+    <canvas id="departmentChart"></canvas>
+</div>
+
+        <div class="container">
+    <h2>Degree Distribution</h2>
+    <canvas id="degreeChart"></canvas>
+</div>
+
+    </div>
+<div class="row">
+    <div class="container">
+    <h2>Gender Distribution</h2>
+    <canvas id="genderChart"></canvas>
+</div>
+    <div class="container">
+    <h2>Last 30 Days Activity</h2>
+    <canvas id="activityChart"></canvas>
+</div>
+    <div class="container">
+    <h2>Last 24 Hours Activity</h2>
+    <canvas id="last24HoursChart"></canvas>
+</div>
+
+<div class="container">
+    <h2>Student Status</h2>
+    <div class="status-grid">
+        <div class="status-item">
+            <p>Currently Studying:</p>
+            <h2 id="currentlyStudying">Loading...</h2>
+        </div>
+        <div class="status-item">
+            <p>Recently Enrolled:</p>
+            <h2 id="recentlyEnrolled">Loading...</h2>
+        </div>
+        <div class="status-item">
+            <p>About to Graduate:</p>
+            <h2 id="aboutToGraduate">Loading...</h2>
+        </div>
+        <div class="status-item">
+            <p>Graduated:</p>
+            <h2 id="graduated">Loading...</h2>
+        </div>
+    </div>
+</div>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        fetch('/student_status')
+            .then(response => response.json())
+            .then(data => {
+                // Update the content with the received data
+                document.getElementById('currentlyStudying').innerText = data.currently_studying;
+                document.getElementById('recentlyEnrolled').innerText = data.recently_enrolled;
+                document.getElementById('aboutToGraduate').innerText = data.about_to_graduate;
+                document.getElementById('graduated').innerText = data.graduated;
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        fetch('/last_24_hours_activity')
+            .then(response => response.json())
+            .then(data => {
+
+                const ctx = document.getElementById('last24HoursChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.data.map(entry => entry.time),
+                        datasets: [{
+                            label: 'Activity Every 15 Minutes',
+                            data: data.data.map(entry => entry.count),
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        fetch('/last_30_days_activity')
+            .then(response => response.json())
+            .then(data => {
+
+                const ctx = document.getElementById('activityChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.data.map(entry => entry.date),
+                        datasets: [{
+                            label: 'Daily Activity',
+                            data: data.data.map(entry => entry.count),
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    }
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        fetch('/gender_distribution')
+            .then(response => response.json())
+            .then(data => {
+
+                const ctx = document.getElementById('genderChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.data.map(entry => entry.gender),
+                        datasets: [{
+                            data: data.data.map(entry => entry.count),
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.7)',
+                                'rgba(54, 162, 235, 0.7)',
+                                // Add more colors if needed
+                            ],
+                        }]
+                    }
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        fetch('/degree_distribution')
+            .then(response => response.json())
+            .then(data => {
+
+                const ctx = document.getElementById('degreeChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.data.map(entry => entry.degree_title),
+                        datasets: [{
+                            data: data.data.map(entry => entry.count),
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.7)',
+                                'rgba(54, 162, 235, 0.7)',
+                                'rgba(255, 206, 86, 0.7)',
+                                'rgba(75, 192, 192, 0.7)',
+                                'rgba(153, 102, 255, 0.7)',
+                                // Add more colors if needed
+                            ],
+                        }]
+                    }
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        fetch('/department_distribution')
+            .then(response => response.json())
+            .then(data => {
+
+                const ctx = document.getElementById('departmentChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.data.map(entry => entry.department),
+                        datasets: [{
+                            data: data.data.map(entry => entry.count),
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.7)',
+                                'rgba(54, 162, 235, 0.7)',
+                                'rgba(255, 206, 86, 0.7)',
+                                'rgba(75, 192, 192, 0.7)',
+                                'rgba(153, 102, 255, 0.7)',
+                                // Add more colors if needed
+                            ],
+                        }]
+                    }
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        fetch('/age_distribution')
+            .then(response => response.json())
+            .then(data => {
+
+                const ctx = document.getElementById('ageDistributionChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.data.map(entry => entry.age),
+                        datasets: [{
+                            label: 'Age Distribution',
+                            data: data.data.map(entry => entry.count),
+                            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: { title: { display: true, text: 'Age' } },
+                            y: { title: { display: true, text: 'Count' } }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        fetch('/provincial_distribution')
+            .then(response => response.json())
+            .then(data => {
+
+                const ctx = document.getElementById('provincialChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.data.map(entry => entry.city),
+                        datasets: [{
+                            data: data.data.map(entry => entry.count),
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.7)',
+                                'rgba(54, 162, 235, 0.7)',
+                                'rgba(255, 206, 86, 0.7)',
+                                'rgba(75, 192, 192, 0.7)',
+                                'rgba(153, 102, 255, 0.7)',
+                                // Add more colors if needed
+                            ],
+                        }]
+                    }
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        fetch('/submission_chart_data')
+            .then(response => response.json())
+            .then(data => {
+
+                const ctx = document.getElementById('submissionChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.data.map(entry => entry.date),
+                        datasets: [{
+                            label: 'Daily Submissions',
+                            data: data.data.map(entry => entry.count),
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    }
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
+</body>
+</html>
